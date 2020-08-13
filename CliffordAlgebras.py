@@ -149,19 +149,16 @@ class Clifford:
             self.gamma2 = np.matrix([[0,1],[1,0]])
             self.generators = [self.gamma1,self.gamma2]
             self.chirality = self.get_chirality(self.p,self.q,self.generators)
-    
         
-        # TODO: Procedure for calculating the other types from these two. See my thesis or textbook.            
+        # This is the code for all Clifford Algebras/Modules with p+q>2. This procedure is outlined in
+        # Lawson, H.B., Jr, Michelsohn, M.-L.: Spin Geometry. Princeton University Press, Princeton, NJ (1989)
+        # and a more direct and to the point description of it is in my thesis which can be found at my website:
+        # https://pauldruce.github.io/docs/
         if self.n>2:
-#         if self.n>2 and not (self.p==1 and self.q==3):
             d_p = self.p//2 # Number of times to product with (2,0)
             d_q = self.q//2 # Number of times to product with (0,2) 
             r_p = self.p%2  # Number of times to product with (1,0) i.e. either once, or not at all
             r_q = self.q%2  # Number of times to product with (0,1) i.e. either once, or not at all
-            
-            cliff02 = Clifford(0,2)
-            cliff20 = Clifford(2,0)
-            cliff11 = Clifford(1,1)
             
             """
             There are four options:
@@ -179,6 +176,10 @@ class Clifford:
             If p = odd and q = odd, start with (1,1) and product with (2,0) or (0,2)
             
             """
+                        
+            cliff02 = Clifford(0,2) 
+            cliff20 = Clifford(2,0)
+            cliff11 = Clifford(1,1)
             
             """
             If p = even and q = even
@@ -270,12 +271,17 @@ class Clifford:
             # add the operators together. 
             self.generators = herm+anti_herm
             
+            
+            # The generators of the type (3,0) Clifford algebra are the Pauli matrices.
+            # As most people will want the generators to match up with the usual conventions.
+            # This is done here.
             if self.p==3 and self.q==0:
                 self.x = self.pauli_x = self.pauli_1 = self.generators[1]
                 self.y = self.pauli_y = self.pauli_2 = -1*self.generators[2]
                 self.z = self.pauli_z = self.pauli_3 = self.generators[0]
-            # Type (1,3) setup - produces the Chiral representation.
-            # TODO: figure out how to get chiral and Dirac from the contruction below. 
+                
+            # Type (1,3) setup
+            # TODO: figure out how to related all the different representations together
             elif self.p==1 and self.q==3:
                 # Define the dirac basis for type (1,3)
                 self.dirac0 = np.matrix([[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]]) 
