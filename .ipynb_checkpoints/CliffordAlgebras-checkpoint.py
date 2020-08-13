@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 # # Clifford Alegrba Generators
 
 # This code create the matrix representations of Clifford algebras.
@@ -12,11 +15,13 @@
 # But alas, this is what we have to deal with. 
 
 
-get_ipython().run_line_magic('pylab', 'inline')
 import numpy as np
 import cmath
 from pprint import pprint
+import sympy as sp
 
+
+# In[3]:
 
 
 class Clifford:
@@ -60,7 +65,7 @@ class Clifford:
         """
         The type (1,3) Clifford module is used extensively in theoretical physics. It
         has a slightly different notation to the rest. It starts with gamma^0 for th hermitian operators
-        and the three anti hermitian matrices being gamma^1, gamma^2 and gamma^3.
+        and the three anti hermitian matrices being gamma^1, gamma^2 and gamma^3..
         
         All the other cases are start their labelling from 1 and go upwards.
         """
@@ -70,6 +75,16 @@ class Clifford:
             for i,gen in enumerate(self.generators):
                 print("Gamma_{} = ".format(i)) # Starts the gamma label from zero
                 print(gen)
+            print("\n")
+        elif self.p==3 and self.q==0:
+             # Print out the generators
+            print("The generators are:")
+            print("pauli.x = ") # Pauli Matrix = 1
+            pprint(self.pauli_1)
+            print("pauli.y = ") # Pauli Matrix = 2
+            pprint(self.pauli_2)
+            print("pauli.z = ") # Pauli Matrix = 3
+            pprint(self.pauli_3)
             print("\n")
         else:
             # Print out the generators
@@ -135,20 +150,11 @@ class Clifford:
             self.gamma2 = np.matrix([[0,1],[1,0]])
             self.generators = [self.gamma1,self.gamma2]
             self.chirality = self.get_chirality(self.p,self.q,self.generators)
-        
-#         # Type (1,3) setup - produces the Chiral representation.
-#         # TODO: figure out how to get chiral and Dirac from the contruction below. 
-#         elif self.p==1 and self.q==3:
-#                 self.gamma0 = np.matrix([[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]]) 
-#                 self.gamma1 = np.matrix([[0,0,0,1],[0,0,1,0],[0,-1,0,0],[-1,0,0,0]])
-#                 self.gamma2 = np.matrix([[0,0,0,complex(0,-1)],[0,0,complex(0,1),0],[0,complex(0,1),0,0],[complex(0,-1),0,0,0]])
-#                 self.gamma3 = np.matrix([[0,0, 1,0],[0,0,0,-1],[ -1,0,0,0],[0, 1,0,0]])
-#                 self.generators = [self.gamma0,self.gamma1,self.gamma2,self.gamma3]
-#                 self.chirality = self.get_chirality(self.p,self.q,self.generators)
+    
         
         # TODO: Procedure for calculating the other types from these two. See my thesis or textbook.            
         if self.n>2:
-#         if self.n>2 and not (self.p==1 and self.q==3): # This line is a bit of an experiment. Type(1,3) has many forms that people use. 
+#         if self.n>2 and not (self.p==1 and self.q==3):
             d_p = self.p//2 # Number of times to product with (2,0)
             d_q = self.q//2 # Number of times to product with (0,2) 
             r_p = self.p%2  # Number of times to product with (1,0) i.e. either once, or not at all
@@ -255,21 +261,72 @@ class Clifford:
             herm = []
             anti_herm=[]
             for gen in input_gens:
-                test = gen.H==gen
-                if test.all ==False:
-                    anti_herm.append(gen)
-                elif test.all == True:
+                if np.all(gen.H == gen)==True:
                     herm.append(gen)
+                elif np.all(gen.H == gen)==False:
+                    anti_herm.append(gen)
             
             # Set the generators to what has been calculated.     
             # The + operation here is action of Python lists, so it concatenates them. It doesn't
             # add the operators together. 
             self.generators = herm+anti_herm
             
+            if self.p==3 and self.q==0:
+                self.x = self.pauli_x = self.pauli_1 = self.generators[1]
+                self.y = self.pauli_y = self.pauli_2 = -1*self.generators[2]
+                self.z = self.pauli_z = self.pauli_3 = self.generators[0]
+            # Type (1,3) setup - produces the Chiral representation.
+            # TODO: figure out how to get chiral and Dirac from the contruction below. 
+            elif self.p==1 and self.q==3:
+                # Define the dirac basis for type (1,3)
+                self.dirac0 = np.matrix([[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]]) 
+                self.dirac1 = np.matrix([[0,0,0,1],[0,0,1,0],[0,-1,0,0],[-1,0,0,0]])
+                self.dirac2 = np.matrix([[0,0,0,complex(0,-1)],[0,0,complex(0,1),0],[0,complex(0,1),0,0],[complex(0,-1),0,0,0]])
+                self.dirac3 = np.matrix([[0,0, 1,0],[0,0,0,-1],[ -1,0,0,0],[0, 1,0,0]])
+                self.dirac_generators = [self.dirac0,self.dirac1,self.dirac2,self.dirac3]
+                self.dirac_chirality = self.get_chirality(self.p,self.q,self.dirac_generators)
+                
+                # Define the majorana basis
+                self.majorana0 = np.matrix([[0,0,0,complex(0,-1)],[0,0,complex(0,1),0],[0,complex(0,-1),0,0],[complex(0,1),0,0,0]])
+                self.majorana1 = np.matrix([[complex(0,1),0,0,0],[0,complex(0,-1),0,0],[0,0,complex(0,1),0],[0,0,0,complex(0,-1)]])
+                self.majorana2 = np.matrix([[0,0,0,complex(0,1)],[0,0,complex(0,-1),0],[0,complex(0,-1),0,0],[complex(0,1),0,0,0]])
+                self.majorana3 = np.matrix([[0,complex(0,-1),0,0],[complex(0,-1),0,0,0],[0,0,0,complex(0,-1)],[0,0,complex(0,1),0]])
+                self.majorana_generators = [self.majorana0,self.majorana1,self.majorana2,self.majorana3]
+                self.majorana_chirality = -1*self.get_chirality(self.p,self.q,self.majorana_generators)
+                
+                # Define the Chiral basis
+                self.chiral0 = np.matrix([[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]])
+                self.chiral1 = np.matrix([[0,0,0,1],[0,0,1,0],[0,0,0,-1],[0,0,-1,0]])
+                self.chiral2 = np.matrix([[0,0,0,complex(0,-1)],[0,0,complex(0,1),0],[0,complex(0,1),0,0],[complex(0,-1),0,0,0]])
+                self.chiral3 = np.matrix([[0,0,1,0],[0,0,0,-1],[-1,0,0,0],[0,1,0,0]])
+                self.chiral_generators = [self.chiral0,self.chiral1,self.chiral2,self.chiral3]
+                self.chiral_chirality= self.get_chirality(self.p,self.q,self.chiral_generators)
+                
+
             # Get the new chirality operator
             self.chirality = self.get_chirality(self.p,self.q,self.generators)
     """  ===== End of Setup ====  """
 
+
+# In[4]:
+
+
+cliff13 = Clifford(1,3)
+
+
+# In[5]:
+
+
+cliff13.generators
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
 
 
 

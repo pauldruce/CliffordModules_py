@@ -14,16 +14,7 @@
 # engineer.
 # But alas, this is what we have to deal with. 
 
-# In[1]:
 
-
-get_ipython().system('jupyter nbconvert --to script CliffordAlgebras.ipynb')
-
-
-# In[2]:
-
-
-get_ipython().run_line_magic('pylab', 'inline')
 import numpy as np
 import cmath
 from pprint import pprint
