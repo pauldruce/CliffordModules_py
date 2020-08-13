@@ -255,9 +255,10 @@ class Clifford:
             herm = []
             anti_herm=[]
             for gen in input_gens:
-                if all(gen.H==gen) ==False:
+                test = gen.H==gen
+                if test.all ==False:
                     anti_herm.append(gen)
-                elif all(gen.H==gen) == True:
+                elif test.all == True:
                     herm.append(gen)
             
             # Set the generators to what has been calculated.     

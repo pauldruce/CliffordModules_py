@@ -14,13 +14,13 @@
 # engineer.
 # But alas, this is what we have to deal with. 
 
-# In[352]:
+# In[1]:
 
 
 get_ipython().system('jupyter nbconvert --to script CliffordAlgebras.ipynb')
 
 
-# In[353]:
+# In[2]:
 
 
 get_ipython().run_line_magic('pylab', 'inline')
@@ -30,7 +30,7 @@ from pprint import pprint
 import sympy as sp
 
 
-# In[431]:
+# In[3]:
 
 
 class Clifford:
@@ -270,14 +270,20 @@ class Clifford:
             herm = []
             anti_herm=[]
             for gen in input_gens:
-                if all(gen.H==gen) ==False:
-                    anti_herm.append(gen)
-                elif all(gen.H==gen) == True:
+                if np.all(gen.H == gen)==True:
                     herm.append(gen)
+                elif np.all(gen.H == gen)==False:
+                    anti_herm.append(gen)
+            
+            # Set the generators to what has been calculated.     
+            # The + operation here is action of Python lists, so it concatenates them. It doesn't
+            # add the operators together. 
+            self.generators = herm+anti_herm
+            
             if self.p==3 and self.q==0:
-                self.x = self.pauli_x = self.pauli_1 = pauli.generators[1]
-                self.y = self.pauli_y = self.pauli_2 = -1*pauli.generators[2]
-                self.z = self.pauli_z = self.pauli_3 = pauli.generators[0]
+                self.x = self.pauli_x = self.pauli_1 = self.generators[1]
+                self.y = self.pauli_y = self.pauli_2 = -1*self.generators[2]
+                self.z = self.pauli_z = self.pauli_3 = self.generators[0]
             # Type (1,3) setup - produces the Chiral representation.
             # TODO: figure out how to get chiral and Dirac from the contruction below. 
             elif self.p==1 and self.q==3:
@@ -298,117 +304,39 @@ class Clifford:
                 self.majorana_chirality = -1*self.get_chirality(self.p,self.q,self.majorana_generators)
                 
                 # Define the Chiral basis
-                self.chiral0 = np.bmat([[np.identity(2),np.zeros((2,2))],[np.zeros((2,2)),-1*np.identity(2)]])
-                self.chiral1 = np.bmat([[np.zeros((2,2)), pauli.x],[-1*pauli.x,np.zeros((2,2))]])
-                self.chiral2 = np.bmat([[np.zeros((2,2)), pauli.y],[-1*pauli.y,np.zeros((2,2))]])
-                self.chiral3 = np.bmat([[np.zeros((2,2)), pauli.z],[-1*pauli.z,np.zeros((2,2))]])
+                self.chiral0 = np.matrix([[0,0,1,0],[0,0,0,1],[1,0,0,0],[0,1,0,0]])
+                self.chiral1 = np.matrix([[0,0,0,1],[0,0,1,0],[0,0,0,-1],[0,0,-1,0]])
+                self.chiral2 = np.matrix([[0,0,0,complex(0,-1)],[0,0,complex(0,1),0],[0,complex(0,1),0,0],[complex(0,-1),0,0,0]])
+                self.chiral3 = np.matrix([[0,0,1,0],[0,0,0,-1],[-1,0,0,0],[0,1,0,0]])
                 self.chiral_generators = [self.chiral0,self.chiral1,self.chiral2,self.chiral3]
                 self.chiral_chirality= self.get_chirality(self.p,self.q,self.chiral_generators)
                 
-            # Set the generators to what has been calculated.     
-            # The + operation here is action of Python lists, so it concatenates them. It doesn't
-            # add the operators together. 
-            self.generators = herm+anti_herm
+
             # Get the new chirality operator
             self.chirality = self.get_chirality(self.p,self.q,self.generators)
     """  ===== End of Setup ====  """
 
 
-# In[432]:
+# In[4]:
 
 
-cliff13 =Clifford(1,3)
-cliff13.introduce()
+cliff13 = Clifford(1,3)
 
 
-# Check anti commutator relations for type (1,3)
-
-# In[433]:
+# In[5]:
 
 
-gamma0 = cliff13.generators[0]
-gamma1 = cliff13.generators[1]
-gamma2 = cliff13.generators[2]
-gamma3 = cliff13.generators[3]
-chirality13 = cliff13.chirality
+cliff13.generators
 
 
-# In[434]:
+# In[ ]:
 
 
-pprint(np.dot(gamma0,gamma0)+np.dot(gamma0,gamma0)==2*np.identity(4))
-pprint(np.dot(gamma1,gamma1)+np.dot(gamma1,gamma1)==-2*np.identity(4))
-pprint(np.dot(gamma2,gamma2)+np.dot(gamma2,gamma2)==-2*np.identity(4))
-pprint(np.dot(gamma3,gamma3)+np.dot(gamma3,gamma3)==-2*np.identity(4))
-pprint(chirality13*chirality13==np.identity(4))
 
 
-# In[435]:
+
+# In[ ]:
 
 
-pauli = Clifford(3,0)
 
-
-# In[436]:
-
-
-pauli.introduce()
-
-
-# In[438]:
-
-
-U0 = np.bmat([[np.identity(2),np.identity(2)],[-1*np.identity(2),np.identity(2)]])
-U1 = np.bmat([[np.identity(2),pauli.x],[-1*pauli.x,np.identity(2)]])
-U11 = np.bmat([[np.identity(2),complex(0,1)*pauli.x],[-1*pauli.x,complex(0,-1)*np.identity(2)]])
-U2 = np.bmat([[np.identity(2),pauli.y],[-1*pauli.y,np.identity(2)]])
-U3 = np.bmat([[np.identity(2),pauli.z],[-1*pauli.z,np.identity(2)]])
-U4 = np.bmat([[np.identity(2),pauli.chirality],[-1*pauli.chirality,np.identity(2)]])
-# U = np.bmat([[a*pauli.x,complex(0,1)*b*pauli.z],[-1*complex(0,1)*b*pauli.z,a*pauli.x]])
-# U = complex(0,1)*np.bmat([[np.identity(2),-1*pauli.x],[pauli.x,np.identity(2)]]).T
-# U = np.bmat([[np.identity(2),np.identity(2)],[-1*np.identity(2),np.identity(2)]])
-# U = np.bmat([[pauli.z,-1*pauli.y],[pauli.y,pauli.z]])
-
-Us = [U0,U1,U2,U3,U4]
-
-
-# In[442]:
-
-
-for U in Us:
-    new_gens = []
-    for i,gen in enumerate(cliff13.generators):
-        new_gens.append(U*gen*U.T/2)
-        print("U * gamma{} * U.T = ".format(i))
-        pprint(U*gen*U.T/2)
-    print("U*chirality*U.T = ")
-    pprint(U*cliff13.chirality*U.T/2)
-    print("\n")
-
-
-# In[443]:
-
-
-V0 = np.bmat([[np.identity(2),np.identity(2)],[np.identity(2),-1*np.identity(2)]])
-V1 = np.bmat([[pauli.x,np.identity(2),],[-1*np.identity(2), pauli.x]])
-V2 = np.bmat([[pauli.y,np.identity(2)],[-1*np.identity(2),pauli.y]])
-V3 = np.bmat([[pauli.z,np.identity(2)],[-1*np.identity(2),pauli.z]])
-V4 = np.bmat([[pauli.chirality,np.identity(2),],[-1*np.identity(2),pauli.chirality]])
-
-
-Vs = [V0,V1,V2,V3,V4]
-
-
-# In[444]:
-
-
-for U in Vs:
-    new_gens = []
-    for i,gen in enumerate(cliff13.generators):
-        new_gens.append(U*gen*U.T/2)
-        print("U * gamma{} * U.T = ".format(i))
-        pprint(U*gen*U.T/2)
-    print("U*chirality*U.T = ")
-    pprint(U*cliff13.chirality*U.T/2)
-    print("\n")
 
