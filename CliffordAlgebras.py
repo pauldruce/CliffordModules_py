@@ -18,7 +18,6 @@
 import numpy as np
 import cmath
 from pprint import pprint
-import sympy as sp
 
 
 # In[3]:
